@@ -1,0 +1,13 @@
+{
+    "name": "sprintrun/server",
+    "description": "The server side app for sprint run app",
+    "authors": [
+        {
+            "name": "Willian Mano",
+            "email": "willianmanoaraujo@gmail.com"
+        }
+    ],
+    "require": {
+        "silex/silex": "~2.0"
+    }
+}
