@@ -9,5 +9,11 @@
     ],
     "require": {
         "silex/silex": "~2.0"
+    },
+     "autoload": {
+        "psr-4": {
+            "SprintRunServer\\Application\\": "src/"
+        }
     }
+
 }
