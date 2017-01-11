@@ -8,8 +8,6 @@ use SprintRunServer\Application\Conexao;
 
 $app = new Silex\Application();
 
-$app['debug'] = true;
-
 $conexao = Conexao::getInstance();
 
 
@@ -39,6 +37,41 @@ $app->get('points', function() {
   ];
 
   return new JsonResponse($points, 200);
+});
+
+
+$app->post('points', function(Request $request) use ($app, $conexao){
+
+    $conexao->beginTransaction();
+    $data = $request->request->all();
+
+    
+    try{
+
+          $stmt = $conexao->prepare('INSERT INTO points(sprint_id, user_id, point_type_id, obs) VALUES(:sprints_id, :user_id, :point_type_id, :obs)');
+          $stmt->bindParam(':sprints_id', $data['sprints_id'], \PDO::PARAM_INT);
+          $stmt->bindParam(':user_id', $data['user_id'], \PDO::PARAM_INT);
+          $stmt->bindParam(':point_type_id', $data['point_type_id'], \PDO::PARAM_INT);
+          $stmt->bindParam(':obs', $data['obs'], \PDO::PARAM_STR);
+
+          
+
+          if(!$stmt->execute() === false){
+            $conexao->commit();
+            $status = new JsonResponse('Sucesso', 200);
+          }else{
+            $conexao->rollBack();
+            $status = new JsonResponse('Erro', 400);
+            
+          }
+
+    }catch(PDOException $e){
+          //echo $e->getMessage();
+          $conexao->rollBack();
+    }
+
+    return $status;
+
 });
 
 $app['debug'] = true;
