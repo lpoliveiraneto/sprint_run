@@ -28,13 +28,24 @@ $app->get('sprints', function() use ($conexao)  {
     return new JsonResponse($sprints, 200);
 });
 
-$app->get('points', function() {
-  $points = [
-    ['id' => 1, 'nome' => 'Felipe', 'points' => 12],
-    ['id' => 2, 'nome' => 'Guilherme', 'points' => 10],
-    ['id' => 3, 'nome' => 'Lucas', 'points' => 8],
-    ['id' => 4, 'nome' => 'Pedro', 'points' => 5]
-  ];
+$app->get('points/{id_sprint}', function($id_sprint) use ($conexao){
+
+    $stmt = $conexao->prepare('SELECT p.sprint_id, p.user_id, u.name, sum(pt.default_points) AS pontos 
+                                FROM points p 
+                                JOIN usuarios u JOIN points_types pt ON p.user_id = u.id AND p.point_type_id = pt.id
+                                WHERE p.sprint_id=:id_sprint 
+                                GROUP BY p.user_id, u.name, pt.default_points ORDER BY pontos DESC');
+    
+    $stmt->bindParam(':id_sprint', $id_sprint);
+
+    if(!$stmt->execute() === false){
+        $pontos = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $status = new JsonResponse($pontos, 200);
+    }else{
+        $status = new JsonResponse('Erro', 400);
+    }
+
+    return $status;
 
   return new JsonResponse($points, 200);
 });
@@ -44,7 +55,6 @@ $app->post('points', function(Request $request) use ($app, $conexao){
 
     $conexao->beginTransaction();
     $data = $request->request->all();
-
     
     try{
 
